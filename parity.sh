@@ -10,11 +10,12 @@ git clone -b beta  https://github.com/ethcore/parity
 cd parity
 sudo cargo build --release
 sudo cp target/release/parity /usr/local/bin
-#Create a Passworf file
-echo "May2016!" > password.txt
+#Create a Password file
+
 # Get the default account note you will need to enter the password
 parity account new
 parity account list
-# Run the parity node using the account you just created or your own local account
+# Run the parity node using own local account (notice the nohup with an & at the end will run it in background)
 #parity --testnet -jw --jsonrpc-cors "http://localhost:8081" --unlock 0xca28493b99971a6289ddfd50b313999694d41b7b --password './target/release/password.txt' -l own_tx=trace
-parity --pruning "fast" --force-sealing --rpc --maxpeers "100" --cache "3062" --author "90f2682dc5be188527db4d0299674d846b8ab8f3" -j
+nohup parity --pruning "fast" --force-sealing --rpc --maxpeers "100" --cache "3062" --author "70e84041de436631508099b3f2504315cb31a907"  --webapp-port "8080" --webapp-interface "all" --webapp-user "admin" --webapp-pass "admin" --jsonrpc-interface "all" -jw > /dev/null &# note you can view the jobs with a ps -ef | grep parity
+# you can kill the job using kill -9 2806 (where 2806 is the pid you got whenn you did your ps -ef | grep parity)
