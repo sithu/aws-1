@@ -4,7 +4,7 @@ sudo apt-get update
 sudo apt-get install linux-generic
 # Reboot from the console and wait a while (may get some connection errors initially)
 # Get the ubuntu 14.4 version of the CUDA Toolkit and run it https://developer.nvidia.com/cuda-downloads
-wget http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1404/x86_64/cuda-repo-ubuntu1404_7.5-18_amd64.deb
+# wget http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1404/x86_64/cuda-repo-ubuntu1404_7.5-18_amd64.deb
 sudo dpkg -i cuda-repo-ubuntu1404_7.5-18_amd64.deb
 sudo apt-get update
 sudo apt-get install cuda
@@ -41,4 +41,4 @@ sudo apt-get install cuda
 
 
 #Connect it to Parity node
-ethminer -G -F "http://54.200.196.231:8545" 
+ethminer -G -F "http://54.200.196.231:8545"

@@ -17,5 +17,6 @@ parity account new
 parity account list
 # Run the parity node using own local account (notice the nohup with an & at the end will run it in background)
 #parity --testnet -jw --jsonrpc-cors "http://localhost:8081" --unlock 0xca28493b99971a6289ddfd50b313999694d41b7b --password './target/release/password.txt' -l own_tx=trace
-nohup parity --pruning "fast" --force-sealing --rpc --maxpeers "100" --cache "3062" --author "70e84041de436631508099b3f2504315cb31a907"  --webapp-port "8080" --webapp-interface "all" --webapp-user "admin" --webapp-pass "admin" --jsonrpc-interface "all" -jw > /dev/null &# note you can view the jobs with a ps -ef | grep parity
+nohup parity --pruning "fast" --force-sealing --rpc --maxpeers "100" --cache "3062" --author "70e84041de436631508099b3f2504315cb31a907"  --webapp-port "8080" --webapp-interface "all" --webapp-user "admin" --webapp-pass "admin" --jsonrpc-interface "all" -jw > /dev/null &
+# note you can view the jobs with a ps -ef | grep parity
 # you can kill the job using kill -9 2806 (where 2806 is the pid you got whenn you did your ps -ef | grep parity)
