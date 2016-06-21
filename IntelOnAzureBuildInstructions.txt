@@ -1,0 +1,448 @@
+OpenCL(TM) 1.2 Driver for Intel(R) HD, Iris(TM), and Iris(TM) Pro Graphics for Linux -- Installation[^1]
+========================================================================================================
+
+Version Information
+-------------------
+
+This document covers the Intel(R) OpenCL 1.2 Linux graphics device
+driver version 1.0-BUILD_ID, hereafter referred to as the
+intel-opencl-1.2-1.0 driver, where BUILD_ID refers to the build ID of
+the distributed files.
+
+Overview
+--------
+
+This document provides instructions on installing the
+intel-opencl-1.2-1.0 driver for 64-bit Linux platforms. Some steps may
+involve time-consuming operations on some platforms. Please review the
+full document before choosing which method best meets your needs. See
+the intel-opencl-1.2-1.0 driver release notes, section Linux Kernel
+Feature Differences, for feature differences between the supported
+methods.
+
+Installation
+------------
+
+Installation of the intel-opencl-1.2-1.0 driver requires a 4th or 5th
+generation Intel(R) processor with Intel(R) Processor Graphics
+Technology not previously disabled by the BIOS or motherboard settings.
+If unsure, consult the hardware's documentation or CPU part information
+on Intel's ARK website, http://ark.intel.com, for hardware capabilities.
+The CPU architecture and BIOS enabling can be verified using the Linux
+operating system. For example:
+
+    $ grep -m 1 name /proc/cpuinfo
+    model name  : Intel(R) Core(TM) i7-4770R CPU @ 3.20GHz
+
+    $ lspci -nn | grep VGA
+    00:02.0 VGA compatible controller [0300]: Intel Corporation Device [8086:0d22] (rev 08)
+
+Intel(R) validates the Intel(R) OpenCL 1.2 Linux driver on
+
+-   CentOS 7.1 64-bit running a patched CentOS 7.1 Linux 3.10.0-229
+    kernel and
+-   CentOS 7.1 running a patched kernel.org Linux 4.1 kernel, referred
+    to as the generic kernel.
+
+In addition to the feature differences between the 3.10.0-229 and 4.1
+kernels listed in the release notes, the generic 4.1 kernel has the
+flexibility to be compiled and installed on a variety of Linux
+distributions. See section Generic Operating System (OS) Installation
+for general instructions for OpenCL enabling using a patched Linux 4.1
+kernel.
+
+The remainder of this document makes the following assumptions:
+
+-   the configured Linux operating system will have network access or
+    the ability to install additional packages from the installation
+    image,
+-   a non-privileged account exists (referred to as USERNAME), and
+-   unless explicitly specified, all commands are assumed to be executed
+    by USERNAME and from USERNAME's home directory.
+
+CentOS 7.1 with the Linux 3.10.0-229 Kernel
+
+Intel has validated the operation of the intel-opencl-1.2-1.0 driver
+when using a patched version of the default CentOS 7.1 Linux 3.10.0-229
+kernel. This section details the required steps in order to achieve a
+conforming configuration.
+
+Intel(R) Media Server Studio Interoperability, CentOS
+
+Systems previously[^2] configured for Intel(R) Media Server Studio R6
+solutions must be configured with an updated Linux kernel and
+intel-opencl-1.2-1.0 driver. Intel(R) OpenCL drivers installed during
+the installation of Intel(R) Media Server Studio using RPMs must be
+removed prior to installing the newer, intel-opencl-1.2-1.0 driver.
+
+1.  Query the system for any existing Intel(R) OpenCL RPMs.
+
+        $ rpm -qa | grep intel-opencl
+        PACKAGE1.x86_64
+        PACKAGE2.x86_64
+
+2.  Remove all RPMs listed in the previous step.
+
+        $ sudo rpm -e --nodeps PACKAGE1 PACKAGE2
+
+CentOS Installation and Preliminary Setup
+
+Although CentOS offers several base environments, this section assumes a
+minimal environment. Some of the packages listed in the following steps
+may already be available when using alternative environments.
+
+1.  Configure and install CentOS 7.1 using the minimal base environment
+    or better. See https://www.centos.org for downloadable images and
+    available installation methods.
+
+2.  Install necessary dependencies.
+
+        $ sudo yum install libpciaccess libdrm tar
+
+3.  Once installed, configure all non-root accounts that will be using
+    OpenCL 1.2 devices to be a member of the video group.
+
+        $ sudo usermod -a -G video USERNAME
+
+4.  (optional) Verify the fingerprint and key ID, 6DA77827, of the GPG
+    public key provided with the intel-opencl-1.2-1.0 driver.
+
+        $ gpg --quiet --with-fingerprint vpg_ocl_linux_rpmdeb.public
+          pub  2048R/6DA77827 2015-11-12 "CN = Intel(R) VPG OpenCL GPU driver for Linux", O=Intel Corporation
+                Key fingerprint = F307 9EC1 F71E 6375 DE6A  EA5B 7B46 9B3A 6DA7 7827
+
+5.  (optional) If the GPG key fingerprint is correct, add the key to the
+    system's RPM database.
+
+        sudo rpm --import vpg_ocl_linux_rpmdeb.public
+
+6.  (optional) Verify Intel(R) provided the GPG key ID used to sign the
+    intel-opencl-1.2-1.0 driver.
+
+        $ rpm -Kv intel-opencl-1.2-1.0-BUILD_ID.x86_64.rpm | grep Signature
+            Header V3 RSA/SHA1 Signature, key ID 6da77827: OK
+            V3 RSA/SHA1 Signature, key ID 6da77827: OK
+
+        $ rpm -Kv intel-opencl-1.2-devel-1.0-BUILD_ID.x86_64.rpm | grep Signature
+            Header V3 RSA/SHA1 Signature, key ID 6da77827: OK
+            V3 RSA/SHA1 Signature, key ID 6da77827: OK
+
+7.  Install the intel-opencl-1.2-1.0 driver and the kernel patch set to
+    the system. Note: A conforming configuration requires a Linux
+    installation running a patched kernel using the Intel(R) patch set
+    described in this installation document.
+
+        $ sudo rpm -ivh intel-opencl-1.2-1.0-BUILD_ID.x86_64.rpm
+
+Patch and Compile the CentOS Linux 3.10.0-229 Kernel
+
+The following steps will patch and compile the modified CentOS Linux
+3.10.0-229 kernel required for OpenCL 1.2 applications on a conforming
+system. The section CentOS Installation and Preliminary Setup must have
+been previously completed.
+
+1.  Install the yum-utils, rpmdevtools, and pesign RPMs.
+
+        $ sudo yum install yum-utils rpmdevtools pesign
+
+2.  In the home directory of USERNAME download the RPM source for the
+    default kernel.
+
+        $ curl -O http://vault.centos.org/7.1.1503/os/Source/SPackages/kernel-3.10.0-229.el7.src.rpm
+
+3.  Download and install any missing dependencies to build the CentOS
+    default kernel RPM.
+
+        $ sudo yum-builddep kernel-3.10.0-229.el7.src.rpm
+
+4.  Create an RPM build directory structure in USERNAME's home
+    directory.
+
+        $ rpmdev-setuptree
+
+5.  Add the kernel source file to USERNAME's RPM build area. Warnings
+    regarding the non-existent user and group, builder, can be ignored.
+
+        $ rpm -ivh kernel-3.10.0-229.el7.src.rpm
+
+6.  Add the intel-opencl-1.2-1.0 driver kernel patches into the patch
+    set of the CentOS 7.1 default kernel.
+
+        $ cp /opt/intel/opencl/kernel-3.10.0-229.patch \
+              ~/rpmbuild/SOURCES/linux-kernel-test.patch
+
+7.  Tag the patched kernel with the buildid "intel.sr1" to provide
+    identification and prevent overwriting of the original CentOS
+    kernel.
+
+        $ perl -p -i.bak -e 's/^# % (.*?buildid ).*/%\1.intel.sr1/' \
+              ~/rpmbuild/SPECS/kernel.spec
+
+8.  Compile the patched Linux kernel into an RPM.
+
+        $ rpmbuild -bb --with firmware --without debug --without debuginfo \
+              --without perf --without tools ~/rpmbuild/SPECS/kernel.spec
+
+    The RPM created in this step can be distributed and applied to other
+    similarly configured systems as required.
+
+9.  Install the patched kernel.
+
+        $ sudo rpm -ivh --oldpackage \
+              ~/rpmbuild/RPMS/x86_64/kernel-3.10.0-229.el7.centos.intel.sr1.x86_64.rpm
+
+    Note: The RPM installation flag --oldpackage is specified since the
+    yum update process may have installed additional kernels
+
+10. The system must be rebooted with the patched kernel prior to testing
+    any OpenCL applications.
+
+The system should now be enabled to run OpenCL 1.2 applications such as
+the Intel(R) OpenCL Code Samples available from intel.com (see section
+Intel(R) OpenCL Code Samples).
+
+Uninstall
+
+The patched CentOS Linux kernel and intel-opencl-1.2-1.0 driver can be
+removed, restoring the system to its previous condition.
+
+1.  Remove the intel-opencl-1.2-1.0 driver and the patched CentOS
+    3.10.0-229 kernel RPMs.
+
+        $ sudo rpm -e intel-opencl-1.2-devel-1.0
+        $ sudo rpm -e intel-opencl-1.2-1.0
+        $ sudo rpm -e kernel-3.10.0-229.el7.centos.intel.sr1
+
+Generic Operating System (OS) Installation
+
+This section is provided to permit users who require distributions other
+than CentOS 7.1 or OpenCL 1.2 features not supported with the CentOS 7.1
+Linux 3.10.0-229 kernel. See the intel-opencl-1.2-1.0 driver release
+notes, section Linux Kernel Feature Differences, for more information on
+features enabled using this generic OS installation method. General
+steps are provided to compile the Intel(R) OpenCL generic 4.1 Linux
+kernel on CentOS 7.1 and Ubuntu 14.04. Intel(R) validates the generic
+4.1 Linux kernel only for CentOS 7.1; however, other distributions may
+also be configured with appropriate adjustments to the installation
+steps. Alternative distributions must support glibc 2.7 or better.
+
+Instructions in this section should be considered as a guide and adapted
+as necessary for the specific situation of the target system. Applicable
+steps for two packaging methods are provided: RedHat package manager and
+tar file.
+
+Intel(R) Media Server Studio Interoperability, Generic
+
+For generic OS installations, systems previously configured[^3] for
+Intel(R) Media Server Studio R6 solutions must be configured with an
+updated Linux kernel and intel-opencl-1.2-1.0 driver. Please follow the
+steps listed in section Intel(R) Media Server Studio Interoperability,
+CentOS.
+
+For prior Intel(R) Media Server Studio installations using .tar method,
+the previous Intel(R) OpenCL user-mode driver should first be hidden or
+removed from the system.
+
+    $ sudo mv /opt/intel/opencl /opt/intel/opencl-16.4.2.1
+
+Generic OS Installation and Preliminary Setup
+
+Complete the following steps as necessary in order to install the
+intel-opencl-1.2-1.0 driver to the target system. Some adjustments may
+be necessary for systems other than CentOS 7.1 or Ubuntu 14.04. For
+CentOS and other RPM-based systems, please first complete the steps in
+section CentOS Installation and Preliminary Setup under CentOS 7.1 with
+the Linux 3.10.0-229 Kernel to install the intel-opencl-1.2-1.0 driver
+RPMs; once complete, continue with the steps in section Patch and
+Compile the Generic Linux 4.1 Kernel.
+
+1.  Install and configure the operating system.
+
+2.  Once installed, configure all non-root accounts that will be using
+    OpenCL devices to be a member of the video group.
+
+        $ sudo usermod -a -G video USERNAME
+
+3.  (optional) Install additional packages required for performance
+    profiling with the Intel(R) VTune(TM) Amplifier. (For CentOS, these
+    packages were installed in section CentOS Installation and
+    Preliminary Setup.)
+
+    Ubuntu 14.04 (tar method)
+
+        $ sudo apt-get install libpciaccess0 libdrm-intel1
+
+4.  (optional) Install the openssl package to verify the authenticity of
+    the intel-opencl-1.2-1.0 driver.
+
+    CentOS 7.1
+
+        $ sudo yum install openssl
+
+    Ubuntu 14.04
+
+        $ sudo apt-get install openssl
+
+5.  (optional) Save the Intel(R) certificate signing chain provided with
+    the driver release as a .pem file.
+
+        $ openssl pkcs7 -print_certs -inform der -in \
+          intel-opencl-1.2-1.0-BUILD_ID.x86_64.tar.gz.sig > intel_signing_certs.pem
+
+6.  (optional) Verify the signing certificate serial number.
+
+        $ openssl x509 -in intel_signing_certs.pem -serial -noout
+        serial=330000B8664EAC131C3B0C7FC700020000B866
+
+7.  (optional) Verify the signature of each .tar file against the
+    certificate chain.
+
+        $ openssl smime -verify -in intel-opencl-1.2-1.0-BUILD_ID.x86_64.tar.gz.sig \
+          -inform der -content intel-opencl-1.2-1.0-BUILD_ID.x86_64.tar.gz \
+          -noverify intel_signing_certs.pem > /dev/null
+        Verification successful
+
+        $ openssl smime -verify -in intel-opencl-1.2-devel-1.0-BUILD_ID.x86_64.tar.gz.sig \
+          -inform der -content intel-opencl-1.2-devel-1.0-BUILD_ID.x86_64.tar.gz \
+          -noverify intel_signing_certs.pem > /dev/null
+        Verification successful
+
+8.  Install the intel-opencl-1.2-1.0 driver and kernel patches to the
+    system.
+
+        $ mkdir intel-opencl
+        $ tar -C intel-opencl -zxf intel-opencl-1.2-1.0-BUILD_ID.x86_64.tar.gz
+        $ tar -C intel-opencl -zxf intel-opencl-1.2-devel-1.0-BUILD_ID.x86_64.tar.gz
+        $ sudo cp -R intel-opencl/* /
+
+Patch and Compile the Generic Linux 4.1 Kernel
+
+The following steps will patch and compile the modified Linux 4.1 kernel
+required for OpenCL applications.
+
+1.  Install required kernel build tools.
+
+    CentOS 7.1 (rpm method)
+
+        $ sudo yum groupinstall 'Development Tools'
+        $ sudo yum install rpmdevtools openssl bc
+
+    Ubuntu 14.04 (tar method)
+
+        $ sudo apt-get install build-essential openssl bc curl
+
+2.  Download the Linux 4.1 kernel.
+
+        $ cd ~/intel-opencl
+        $ curl -O https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-4.1.tar.xz
+
+3.  Create a build area to compile the Linux 4.1 kernel.
+
+    CentOS 7.1 (rpm method)
+
+        $ rpmdev-setuptree
+        $ mkdir -p ~/intel-opencl/linux-4.1
+
+    Ubuntu 14.04 (tar method)
+
+        $ mkdir -p ~/intel-opencl/linux-4.1
+
+4.  Expand the Linux 4.1 kernel previously downloaded and enter its
+    directory.
+
+        $ cd ~/intel-opencl
+        $ tar -Jxf linux-4.1.tar.xz
+        $ cd ~/intel-opencl/linux-4.1
+
+5.  Apply the intel-opencl-1.2-1.0 driver kernel patch set to the 4.1
+    kernel.
+
+        $ patch -p1 < /opt/intel/opencl/kernel-4.1.patch
+
+6.  Use the currently running Linux kernel as a template to configure
+    the 4.1 kernel.
+
+        $ sudo cat /boot/config-`uname -r` > .config
+        $ make olddefconfig
+
+7.  Tag the patched kernel to provide easy identification.
+
+        $ perl -pi -e 's/.*CONFIG_LOCALVERSION=.*/CONFIG_LOCALVERSION=".intel.sr1"/' .config
+
+8.  Compile the patched Linux kernel either into a distributable package
+    or directly on the system.
+
+    CentOS 7.1 (rpm method)
+
+        $ rm -f .version
+        $ make -j4 binrpm-pkg
+
+    Ubuntu 14.04 Direct Install (tar method)
+
+        $ make -j4; make -j4 modules
+
+9.  Install the patched kernel and distribute to other similarly
+    configured systems as required. (The --oldpackage option is
+    specified since higher-versioned kernels may be installed on the
+    system.)
+
+    CentOS 7.1 (rpm method)
+
+        $ sudo rpm -ivh --oldpackage ~/rpmbuild/RPMS/x86_64/kernel-4.1.0.intel.sr1-2.x86_64.rpm
+
+    Ubuntu 14.04 Direct Install (tar method)
+
+        $ sudo make modules_install
+        $ sudo make install
+
+10. The system must be rebooted prior to testing any OpenCL
+    applications.
+
+Intel(R) OpenCL Code Samples
+----------------------------
+
+Source code for several sample OpenCL programs is available from Intel
+that may be used to query the capabilities of the available OpenCL
+platform(s) and execute on OpenCL devices. Please visit
+https://software.intel.com/en-us/intel-opencl-code-builder-support/code-samples
+to download the samples.
+
+In order to build and run the samples on CentOS 7.1, a few additional
+RPMs[^4] may be required.
+
+    $ sudo rpm -ivh intel-opencl-1.2-1.0-BUILD_ID.x86_64.rpm
+    $ sudo rpm -ivh intel-opencl-1.2-devel-1.0-BUILD_ID.x86_64.rpm
+    $ sudo yum install gcc-c++ make mesa-libGL-devel
+
+The samples can then be built with
+
+    $ make
+
+Some sample and platform combinations may require a period of time
+exceeding the default i915 hang check timer. See the release notes,
+section Known Limitations, for more information on the hang check timer
+and how it can be disabled.
+
+Feedback and Support
+--------------------
+
+We welcome feedback to continue to make this product better. Please
+direct your feedback, including future feature requests, through your
+primary Intel product support channels, or via Intel's OpenCL support
+forum at https://software.intel.com/en-us/forums/opencl.
+
+[^1]: Intel(R), the Intel logo, Intel(R) Core(TM) processors, Intel(R)
+    VTune(TM), Intel(R) Xeon(R), Intel(R) HD, Intel(R) Iris(TM), and
+    Intel(R) Iris(TM) Pro graphics are trademarks of Intel Corporation
+    in the U.S. and other countries. Other names and brands may be
+    claimed as the property of others. OpenCL(TM) is a trademark of
+    Apple Inc. used by permission by Khronos. Copyright (C) 2015 Intel
+    Corporation. All rights reserved.
+
+[^2]: New system installations should first complete the Intel(R) Media
+    Server Studio R6 installation before proceeding.
+
+[^3]: New system installations should first complete the Intel(R) Media
+    Server Studio R5 installation before proceeding.
+
+[^4]: On Ubuntu, the mesa-common-dev package is required.
