@@ -1,3 +1,9 @@
+# Create a docker file to create the docker image
+## Check this out https://github.com/RibbitFROG/DevOpsScripts/blob/master/Dockerfiles/loyyal-node/Dockerfile
+## And then read this https://nodejs.org/en/docs/guides/nodejs-docker-webapp/
+
+# Then run the script in the docker container
+
 # Get the tools needed to run parity
 sudo apt-get clean
 sudo apt-get update
